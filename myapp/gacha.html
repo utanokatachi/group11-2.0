@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻卡扭域 - 抽卡</title>
+    <style>
+        /* 基礎樣式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #272953 0, #090919 50%, #050510 100%);
+            color: #f5f5ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        /* 頂部資源區 */
+        .header {
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(10, 10, 30, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+        }
+
+        .resource span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* 抽卡主區 */
+        .gacha-main {
+            width: 90%;
+            max-width: 800px;
+            background: rgba(12, 12, 40, 0.86);
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        /* 卡池切換按鈕 */
+        .pool-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .pool-switch button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #4a4a70;
+            color: #fff;
+            transition: background 0.3s;
+        }
+
+        .pool-switch button:hover {
+            background: #6a6ab0;
+        }
+
+        .pool-switch button.active {
+            background: #a0a0ff;
+            font-weight: bold;
+            box-shadow: 0 0 10px #a0a0ff80;
+        }
+
+        /* 抽卡展示區 */
+        .draw-display {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 30px;
+            min-height: 250px;
+        }
+
+        #drawImg {
+            width: 250px;
+            height: 250px;
+            object-fit: contain;
+            border: 2px solid #5a5a8a;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+        }
+
+        /* 抽卡按鈕區 */
+        .draw-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .draw-buttons button {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #fff;
+            transition: transform 0.1s;
+        }
+
+        .draw-buttons button:active {
+            transform: scale(0.98);
+        }
+
+        .draw-buttons #drawOne {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        .draw-buttons #drawTen {
+            background: linear-gradient(135deg, #ffc107, #cc9a00);
+        }
+
+        /* 結果彈窗 */
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .result-box {
+            background: #1c1e36;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            width: 700px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+            position: relative;
+            border: 3px solid #ffd700; /* 金色邊框 */
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-shadow: 0 0 8px #ffd70080;
+        }
+
+        .prize-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .prize-card {
+            width: 100px;
+            height: 100px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            cursor: help;
+        }
+        
+        .prize-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .summary {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .summary span {
+            color: #7aff7a;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: #d9534f;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div style="width: 90%; max-width: 800px; margin-bottom: 10px;">
+        <button class="button" onclick="window.location.href='./index.html'" style="padding: 5px 10px; background: #5a5a8a;">&lt; 返回主頁</button>
+    </div>
+
+    <div class="header">
+        <div class="resource">
+            <span>💎 寶石: <span id="gemNum">120</span></span>
+            <span>💰 金幣: <span id="goldNum">3500</span></span>
+        </div>
+        <div class="resource">
+            <span style="font-size: 0.9rem;">來自 app.js 的角色</span>
+        </div>
+    </div>
+
+    <div class="gacha-main">
+        <h2>幻卡扭域</h2>
+
+        <div class="pool-switch">
+            <button id="btnRole" onclick="setPool('role')">角色卡池</button>
+            <button id="btnCat" onclick="setPool('cat')">道具卡池</button>
+        </div>
+        
+        <div class="draw-display">
+            <img id="drawImg" src="https://img.88icon.com/download/jpg/20201109/d032693e21318af1dcabbf7a388f8057_512_512.jpg!bg" alt="Gacha Draw Result">
+        </div>
+
+        <div class="draw-buttons">
+            <button id="drawOne" onclick="draw(1)">抽 1 次 (💎<span id="costOne">10</span>)</button>
+            <button id="drawTen" onclick="draw(10)">抽 10 次 (💎<span id="costTen">90</span>)</button>
+        </div>
+    </div>
+
+    <div id="resultOverlay" class="result-overlay hidden">
+        <div class="result-box">
+            <h3 class="result-title">抽卡結果</h3>
+            <div id="prizeArea" class="prize-area">
+                </div>
+            <div class="summary">
+                本次花費寶石: <span id="costNum">0</span> | 總戰鬥力: <span id="powerNum">0</span>
+            </div>
+            <button class="close-btn" onclick="closeResult()">關閉</button>
+        </div>
+    </div>
+
+    <script>
+    // 資源
+    let gems = 120;
+    let gold = 3500;
+    const COST_ONE = 10;
+    const COST_TEN = 90;
+
+    function renderRes(){
+        document.getElementById("gemNum").textContent = gems;
+        document.getElementById("goldNum").textContent = gold;
+        // 更新抽卡按鈕上的費用顯示 (如果需要)
+        document.getElementById("costOne").textContent = COST_ONE;
+        document.getElementById("costTen").textContent = COST_TEN;
+    }
+    
+    // 現在卡池邏輯由後端處理，前端只需要一個佔位符。
+    let currentPoolKey = "role"; // 鎖定為角色卡池，因為後端只提供角色。
+
+    // 切換卡池函式 (簡化，因為後端只抽角色，但保留高亮效果)
+    function setPool(key){
+        currentPoolKey = key; 
+
+        // 按鈕高亮
+        const btnCat = document.getElementById("btnCat");
+        const btnRole = document.getElementById("btnRole");
+        if (btnCat && btnRole){
+            btnCat.classList.toggle("active", key === "cat");
+            btnRole.classList.toggle("active", key === "role");
+        }
+
+        // 中央展示圖換成預設圖
+        const defaultImg = "https://img.88icon.com/download/jpg/20201109/d032693e21318af1dcabbf7a388f8057_512_512.jpg!bg";
+        document.getElementById("drawImg").src = defaultImg;
+    }
+
+    // 顯示抽卡結果（修改以適應後端返回的格式）
+    function openResult(results, cost){
+        const overlay = document.getElementById("resultOverlay");
+        const prizeArea = document.getElementById("prizeArea");
+        const powerNum = document.getElementById("powerNum");
+        const costNum = document.getElementById("costNum");
+        const title = document.querySelector(".result-title");
+
+        title.textContent = `抽卡結果（角色卡池）`; 
+        costNum.textContent = cost;
+        prizeArea.innerHTML = "";
+        let totalPower = 0;
+
+        results.forEach(r => {
+            totalPower += r.combatPower; // 使用後端提供的 combatPower
+
+            const card = document.createElement("div");
+            card.className = "prize-card";
+            card.title = `${r.name}\n戰鬥力: ${r.combatPower}`; 
+
+            const img = document.createElement("img");
+            img.src = r.img; 
+            img.alt = r.name; 
+
+            card.appendChild(img);
+            prizeArea.appendChild(card);
+        });
+
+        powerNum.textContent = totalPower;
+        overlay.classList.remove("hidden");
+    }
+
+
+    function closeResult(){
+        document.getElementById("resultOverlay").classList.add("hidden");
+    }
+
+    // 修改 draw 函式為非同步，呼叫後端 API
+    async function draw(times){
+        const cost = (times === 10) ? COST_TEN : COST_ONE;
+        
+        if (gems < cost){
+            alert("寶石不足！");
+            return;
+        }
+
+        // 1. 執行扣費
+        gems -= cost;
+
+        try {
+            // 2. 呼叫後端 API
+            const response = await fetch('/api/gacha', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ times: times }) // 傳送抽卡次數給後端
+            });
+
+            if (!response.ok) {
+                throw new Error('抽卡 API 請求失敗');
+            }
+
+            const data = await response.json(); // 取得 { results: [...] }
+
+            const results = data.results;
+
+            if (results && results.length > 0) {
+                // 中央偏右那張更新成最後抽到的角色圖
+                document.getElementById("drawImg").src = results[results.length - 1].img;
+            }
+            
+            // 3. 更新資源顯示並顯示結果
+            renderRes();
+            openResult(results, cost);
+
+        } catch (error) {
+            console.error('抽卡時發生錯誤:', error);
+            alert('抽卡失敗，請檢查伺服器是否運行！');
+            // 如果 API 呼叫失敗，將寶石退還
+            gems += cost; 
+            renderRes();
+        }
+    }
+
+    // 初始化
+    setPool("role"); // 預設為角色卡池
+    renderRes();
+    </script>
+</body>
+</html>

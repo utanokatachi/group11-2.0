@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幻卡扭域 - 角色庫</title>
+    <style>
+        /* --- 全局樣式 (與 index/gacha 一致) --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #272953 0, #090919 50%, #050510 100%);
+            color: #f5f5ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 標題區 */
+        .header {
+            width: 90%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .back-btn {
+            background: #5a5a8a;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background: #6a6ab0; }
+
+        /* --- 網格佈局 (核心) --- */
+        .inventory-grid {
+            width: 90%;
+            max-width: 1000px;
+            display: grid;
+            /* 自動填滿：每個格子最小 160px，最大佔滿空間 */
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding-bottom: 50px;
+        }
+
+        /* --- 角色卡片樣式 --- */
+        .char-card {
+            background: rgba(20, 20, 45, 0.9);
+            border: 2px solid #4a4a70;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .char-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+        }
+
+        /* 圖片區域 */
+        .card-img {
+            width: 100%;
+            aspect-ratio: 1/1; /* 保持正方形 */
+            object-fit: cover;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 資訊區域 */
+        .card-info {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .card-name {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+
+        .card-power {
+            font-size: 0.9rem;
+            color: #00e676; /* 戰鬥力綠色 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* 空庫存提示 */
+        .empty-msg {
+            grid-column: 1 / -1; /* 跨越所有欄位 */
+            text-align: center;
+            color: #888;
+            margin-top: 50px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>我的角色庫 (<span id="totalCount">0</span>)</h1>
+        <a href="./index.html" class="back-btn">返回主畫面</a>
+    </div>
+
+    <div id="inventoryGrid" class="inventory-grid">
+        <div class="empty-msg">讀取中...</div>
+    </div>
+
+    <script>
+        // 頁面載入時執行
+        window.addEventListener('DOMContentLoaded', loadInventory);
+
+        async function loadInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            const totalCountEl = document.getElementById('totalCount');
+
+            try {
+                // 呼叫後端 API 獲取庫存
+                const response = await fetch('/api/inventory');
+                
+                if (!response.ok) throw new Error('無法連接伺服器');
+
+                const characters = await response.json();
+
+                // 更新總數
+                totalCountEl.textContent = characters.length;
+
+                // 清空網格
+                grid.innerHTML = '';
+
+                if (characters.length === 0) {
+                    grid.innerHTML = '<div class="empty-msg">目前沒有角色，快去抽卡吧！</div>';
+                    return;
+                }
+
+                // 遍歷每一個角色並建立卡片 HTML
+                characters.forEach(char => {
+                    const card = document.createElement('div');
+                    card.className = 'char-card';
+                    
+                    // 游標變成手指形狀，暗示可以點擊
+                    card.style.cursor = 'pointer'; 
+
+                    card.innerHTML = `
+                        <img src="${char.img}" alt="${char.name}" class="card-img">
+                        <div class="card-info">
+                            <div class="card-name">${char.name}</div>
+                            <div class="card-power">
+                                ⚔️ ${char.combatPower}
+                            </div>
+                        </div>
+                    `;
+
+                    // *** 新增：點擊事件 ***
+                    card.onclick = () => {
+                        // 1. 儲存選擇的角色到 LocalStorage
+                        // 我們把整個物件轉成字串存起來，key 叫做 'selectedHero'
+                        localStorage.setItem('selectedHero', JSON.stringify(char));
+
+                        // 2. 視覺回饋 (簡單的 alert，或者你可以做更高級的樣式變化)
+                        alert(`已出戰：${char.name}！\n請回到主畫面查看。`);
+                        
+                        // (選用) 也可以加上邊框變色邏輯，這裡先保持簡單
+                    };
+
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('載入失敗:', error);
+                grid.innerHTML = '<div class="empty-msg" style="color: #ff6b6b;">無法載入角色資料，請確認伺服器已啟動。</div>';
+            }
+        }
+    </script>
+</body>
+</html>
