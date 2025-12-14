@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>設定</title>
+  <style>
+    :root{
+      --bg:#0f1220;
+      --panel:#171b2f;
+      --panel2:#101329;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.75);
+      --line:rgba(255,255,255,.12);
+      --accent:#7aa7ff;
+      --good:#49d17d;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", sans-serif;
+      background: radial-gradient(900px 500px at 20% 10%, rgba(122,167,255,.18), transparent 60%),
+                  radial-gradient(700px 400px at 90% 30%, rgba(73,209,125,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .wrap{
+      width:min(980px, 96vw);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: calc(var(--radius) + 8px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    /* header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      backdrop-filter: blur(8px);
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .title h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.06em;
+    }
+    .title .sub{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s ease;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.22); }
+    .btn:active{ transform: translateY(0); }
+
+    /* tabs row (左到右：一般 / 音量 / 語言 / 畫面) */
+    .tabs{
+      display:flex;
+      gap:10px;
+      padding:14px 14px 0;
+      background: transparent;
+    }
+    .tab{
+      flex:1;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      border-radius:14px;
+      padding:12px 10px;
+      cursor:pointer;
+      transition:.15s ease;
+      text-align:center;
+      font-weight:600;
+      letter-spacing:.04em;
+      user-select:none;
+    }
+    .tab[aria-selected="true"]{
+      color:var(--text);
+      border-color: rgba(122,167,255,.45);
+      background: linear-gradient(180deg, rgba(122,167,255,.18), rgba(255,255,255,.04));
+      box-shadow: 0 12px 26px rgba(0,0,0,.25);
+    }
+
+    /* content */
+    .content{
+      padding:14px;
+    }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:16px;
+      min-height: 360px;
+    }
+
+    .section-title{
+      margin:0 0 10px;
+      font-size:14px;
+      color:var(--muted);
+      letter-spacing:.06em;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      border-radius: 14px;
+      margin-bottom:12px;
+    }
+    .row .left{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width: 220px;
+    }
+    .row .name{
+      font-weight:700;
+    }
+    .row .desc{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* checkbox / radio with square check */
+    .check-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .chk{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+      padding:10px 12px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      transition:.15s ease;
+    }
+    .chk:hover{ border-color: rgba(255,255,255,.22); }
+    .chk input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+    .box{
+      width:18px;
+      height:18px;
+      border-radius: 5px;
+      border:2px solid rgba(255,255,255,.5);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      background: transparent;
+      transition:.15s ease;
+    }
+    .box::after{
+      content:"";
+      width:10px;
+      height:6px;
+      border-left:3px solid transparent;
+      border-bottom:3px solid transparent;
+      transform: rotate(-45deg) translateY(-1px);
+      opacity:0;
+      transition:.15s ease;
+    }
+
+    /* checked visuals */
+    .chk input:checked + .box{
+      border-color: rgba(73,209,125,.9);
+      background: rgba(73,209,125,.12);
+    }
+    .chk input:checked + .box::after{
+      border-left-color: rgba(73,209,125,.95);
+      border-bottom-color: rgba(73,209,125,.95);
+      opacity:1;
+    }
+
+    /* make selected radio option look highlighted too */
+    .chk input[type="radio"]:checked ~ .label{
+      color: var(--text);
+    }
+    .label{
+      font-weight:700;
+      color: var(--muted);
+      transition:.15s ease;
+    }
+
+    /* slider */
+    .slider-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 340px;
+      max-width: 520px;
+      width: 100%;
+      justify-content:flex-end;
+    }
+    input[type="range"]{
+      width: min(360px, 100%);
+      accent-color: var(--accent);
+    }
+    .value{
+      min-width: 56px;
+      text-align:right;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      opacity:.95;
+    }
+
+    /* hide panels not active */
+    .panel[hidden]{ display:none; }
+
+    /* responsive */
+    @media (max-width: 720px){
+      .row{ flex-direction:column; align-items:stretch; }
+      .row .left{ min-width:auto; }
+      .slider-wrap{ min-width:auto; justify-content:space-between; }
+      .tabs{ gap:8px; }
+      .tab{ padding:10px 8px; font-size:14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>設定</h1>
+        <div class="sub">一般 / 音量 / 語言 / 畫面</div>
+      </div>
+      <!-- 需要回主頁就改 href -->
+      <a class="btn" href="index.html" aria-label="返回主頁">← 返回</a>
+    </div>
+
+    <!-- Tabs: 左到右 -->
+    <div class="tabs" role="tablist" aria-label="設定選單">
+      <button class="tab" role="tab" id="tab-general" aria-controls="panel-general" aria-selected="true">一般</button>
+      <button class="tab" role="tab" id="tab-volume" aria-controls="panel-volume" aria-selected="false">音量</button>
+      <button class="tab" role="tab" id="tab-lang" aria-controls="panel-lang" aria-selected="false">語言</button>
+      <button class="tab" role="tab" id="tab-display" aria-controls="panel-display" aria-selected="false">畫面</button>
+    </div>
+
+    <div class="content">
+      <!-- 一般 -->
+      <div class="panel" id="panel-general" role="tabpanel" aria-labelledby="tab-general">
+        <p class="section-title">一般設定</p>
+
+        <div class="row">
+          <div class="left">
+            <div class="name">噴血</div>
+            <div class="desc">開啟後，戰鬥特效會出現噴血效果</div>
+          </div>
+
+          <div class="check-wrap">
+            <label class="chk" for="opt-blood">
+              <input id="opt-blood" type="checkbox" />
+              <span class="box" aria-hidden="true"></span>
+              <span class="label">啟用</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 音量 -->
+      <div class="panel" id="panel-volume" role="tabpanel" aria-labelledby="tab-volume" hidden>
+        <p class="section-title">音量設定</p>
+
+        <div class="row">
+          <div class="left">
+            <div class="name">主音量</div>
+            <div class="desc">控制整體音效與音樂的總音量</div>
+          </div>
+
+          <div class="slider-wrap">
+            <input id="vol-master" type="range" min="0" max="100" value="80" />
+            <div class="value" id="vol-master-val">80%</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="left">
+            <div class="name">BGM</div>
+            <div class="desc">只調整背景音樂音量</div>
+          </div>
+
+          <div class="slider-wrap">
+            <input id="vol-bgm" type="range" min="0" max="100" value="70" />
+            <div class="value" id="vol-bgm-val">70%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 語言 -->
+      <div class="panel" id="panel-lang" role="tabpanel" aria-labelledby="tab-lang" hidden>
+        <p class="section-title">語言設定（只能選一個）</p>
+
+        <div class="row">
+          <div class="left">
+            <div class="name">語言</div>
+            <div class="desc">選擇介面顯示語言</div>
+          </div>
+
+          <div class="check-wrap" role="radiogroup" aria-label="語言選擇">
+            <label class="chk" for="lang-en">
+              <input id="lang-en" name="lang" type="radio" value="en" />
+              <span class="box" aria-hidden="true"></span>
+              <span class="label">英文</span>
+            </label>
+
+            <label class="chk" for="lang-zh">
+              <input id="lang-zh" name="lang" type="radio" value="zh-TW" checked />
+              <span class="box" aria-hidden="true"></span>
+              <span class="label">繁中</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 畫面 -->
+      <div class="panel" id="panel-display" role="tabpanel" aria-labelledby="tab-display" hidden>
+        <p class="section-title">畫面設定（偵數只能選一個）</p>
+
+        <div class="row">
+          <div class="left">
+            <div class="name">偵數</div>
+            <div class="desc">選擇遊戲更新頻率（FPS）</div>
+          </div>
+
+          <div class="check-wrap" role="radiogroup" aria-label="偵數選擇">
+            <label class="chk" for="fps-30">
+              <input id="fps-30" name="fps" type="radio" value="30" checked />
+              <span class="box" aria-hidden="true"></span>
+              <span class="label">30 偵</span>
+            </label>
+
+            <label class="chk" for="fps-60">
+              <input id="fps-60" name="fps" type="radio" value="60" />
+              <span class="box" aria-hidden="true"></span>
+              <span class="label">60 偵</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ===== Tabs =====
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const panels = [
+      document.getElementById('panel-general'),
+      document.getElementById('panel-volume'),
+      document.getElementById('panel-lang'),
+      document.getElementById('panel-display')
+    ];
+
+    function activateTab(tab) {
+      tabs.forEach(t => t.setAttribute('aria-selected', String(t === tab)));
+      panels.forEach(p => p.hidden = (p.id !== tab.getAttribute('aria-controls')));
+      tab.focus({preventScroll:true});
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', (e) => {
+        const i = tabs.indexOf(tab);
+        if (e.key === 'ArrowRight') activateTab(tabs[(i + 1) % tabs.length]);
+        if (e.key === 'ArrowLeft')  activateTab(tabs[(i - 1 + tabs.length) % tabs.length]);
+      });
+    });
+
+    // ===== Volume display =====
+    const master = document.getElementById('vol-master');
+    const bgm = document.getElementById('vol-bgm');
+    const masterVal = document.getElementById('vol-master-val');
+    const bgmVal = document.getElementById('vol-bgm-val');
+
+    function updateVol() {
+      masterVal.textContent = master.value + '%';
+      bgmVal.textContent = bgm.value + '%';
+    }
+    master.addEventListener('input', updateVol);
+    bgm.addEventListener('input', updateVol);
+    updateVol();
+
+    // ===== Simple persistence (optional): store to localStorage =====
+    const KEY = 'game_settings_v1';
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+
+        if (typeof s.blood === 'boolean') document.getElementById('opt-blood').checked = s.blood;
+
+        if (typeof s.master === 'number') master.value = String(Math.max(0, Math.min(100, s.master)));
+        if (typeof s.bgm === 'number') bgm.value = String(Math.max(0, Math.min(100, s.bgm)));
+
+        if (s.lang === 'en') document.getElementById('lang-en').checked = true;
+        if (s.lang === 'zh-TW') document.getElementById('lang-zh').checked = true;
+
+        if (s.fps === 60) document.getElementById('fps-60').checked = true;
+        if (s.fps === 30) document.getElementById('fps-30').checked = true;
+
+        updateVol();
+      } catch {}
+    }
+
+    function saveSettings() {
+      const s = {
+        blood: document.getElementById('opt-blood').checked,
+        master: Number(master.value),
+        bgm: Number(bgm.value),
+        lang: document.querySelector('input[name="lang"]:checked')?.value || 'zh-TW',
+        fps: Number(document.querySelector('input[name="fps"]:checked')?.value || 30),
+      };
+      try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {}
+    }
+
+    // Auto-save on changes
+    document.addEventListener('input', (e) => {
+      if (e.target.matches('input')) saveSettings();
+    });
+    document.addEventListener('change', (e) => {
+      if (e.target.matches('input')) saveSettings();
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>
